@@ -9,26 +9,26 @@ var Geometry = require('gl-geometry')
 var glShader = require('gl-shader')
 var glslify = require('glslify')
 var normals = require('normals')
-var createOrbitCamera = require('orbit-camera')
 var createMovableCamera = require('gl-movable-camera')
-
 var vec3 = require('gl-vec3')
 var vec4 = require('gl-vec4')
 var createSkydome = require('gl-skydome-sun')
 var shell = require("gl-now")()
-//var createFBO = require("gl-fbo")
 var fillScreen = require("a-big-triangle")
 var createTexture = require('gl-texture2d')
 var createSphere = require('primitive-sphere')
-var createBox = require('geo-3d-box')
 var createPlane = require('primitive-plane')
-
 var createCube = require('primitive-cube')
 var geoTransform = require('geo-3d-transform-mat4')
 var meshCombine = require('mesh-combine')
-var quat = require('gl-quat')
-var rotateVectorAboutAxis = require('rotate-vector-about-axis')
 
+/*
+Below comes a modified version of the module "gl-fbo"
+It has been modified so that the mag-filter is gl.LINEAR instead of gl.NEAREST.
+This change was necessary, otherwise upscaling a smaller "occlusion texture" would result in blocky
+artifacts
+
+ */
 
 var colorAttachmentArrays = null
 var FRAMEBUFFER_UNSUPPORTED
@@ -87,7 +87,7 @@ function initTexture(gl, width, height, type, format, attachment) {
     }
     var result = createTexture(gl, width, height, format, type)
     result.magFilter = gl.LINEAR
-    result.minFilter = gl.LINEAR
+    result.minFilter = gl.NEAREST
     result.mipSamples = 1
     result.bind()
     gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_2D, result.handle, 0)
@@ -492,6 +492,11 @@ function createFBO(gl, width, height, options) {
 }
 
 
+/*
+End of "gl-fbo"
+ */
+
+
 var phongProgram, // does phong shading for every fragment.
     colorProgram, // this program outputs a single color for every fragment covered by the geometry.
     postPassProgram, // does screen space volumetric scattering.
@@ -499,9 +504,9 @@ var phongProgram, // does phong shading for every fragment.
 
 // Scale of the "occlusion texture" that we are rendering to, in proportion to the full screen size.
 // even if it is not 1.0, it doesn't make a very big visual difference.  And by making the "occlusion texture"
-// smaller, we can save a lot of performance. 
+// smaller, we can save a lot of performance.
 var fboScale = 0.5;
-// fbo that we are rendering to.
+// "occlusion texture".
 var fbo;
 
 

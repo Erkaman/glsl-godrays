@@ -52,7 +52,7 @@ Where the parameters are
 * `weight` see the above.
 * `decay` see the above.
 * `exposure` see the above.
-* `numSamples` see above. However, note that the maximum value of this parameter is 100!
+* `numSamples` see the above. However, note that the maximum value of this parameter is 100!
 * `occlusionTexture` the "occlusion texture" created in pass 1.
 * `screenSpaceSunPos` the sun position in screen space. In the source code of the demo it is shown how this can be calculated.
 * `uv` the coordinates of the current fragment. Note that `x` and `y` should both be in the interval
