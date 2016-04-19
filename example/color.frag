@@ -1,4 +1,4 @@
-precision highp float;
+precision mediump float;
 
 uniform vec3 uColor;
 

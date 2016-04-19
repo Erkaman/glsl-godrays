@@ -1,18 +1,21 @@
 {
   "name": "glsl-godrays",
   "version": "1.0.1",
-  "description": "Draws a skydome with a sun into a 3D scene.",
+  "description": "Shader function for rendering godrays(volumetric light scattering).",
   "scripts": {
     "start": "budo --live example/index.js -- -t glslify",
     "test": "standard"
   },
   "keywords": [
     "stackgl",
-    "skydome",
+    "godrays",
     "sun",
     "glsl",
     "gl",
-    "webgl"
+    "webgl",
+    "light",
+    "volumetric",
+    "scattering"
   ],
   "author": "Eric Arnebäck <arnebackeric@gmail.com> (https://github.com/Erkaman)",
   "license": "Unlicense",
@@ -54,7 +57,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Erkaman/gl-skydome-sun.git"
+    "url": "https://github.com/Erkaman/glsl-godrays.git"
   },
-  "homepage": "https://github.com/Erkaman/gl-skydome-sun#readme"
+  "homepage": "https://github.com/Erkaman/glsl-godrays#readme"
 }

@@ -497,7 +497,9 @@ var phongProgram, // does phong shading for every fragment.
     postPassProgram, // does screen space volumetric scattering.
     skydome, bunnyGeom, boxesGeom, sunSphere, planeGeom
 
-// Scale of the FBO that we are rendering to, in proportion to the full screen size.
+// Scale of the "occlusion texture" that we are rendering to, in proportion to the full screen size.
+// even if it is not 1.0, it doesn't make a very big visual difference.  And by making the "occlusion texture"
+// smaller, we can save a lot of performance. 
 var fboScale = 0.5;
 // fbo that we are rendering to.
 var fbo;
@@ -532,6 +534,27 @@ function addBox(mesh, scale, translate) {
     ]);
 }
 
+function getScreenSpaceSunPos(skydomeVp) {
+
+    /*
+    We can find the screen-space sun position by simply multiplying the sun position(which is the same as sunDir )
+    by the view and projection matrices and scaling the (x,y) coordinates into a non-negative range.
+     */
+
+    var v = vec4.fromValues(sunDir[0], sunDir[1], sunDir[2], 1.0);
+    vec4.transformMat4(v, v, skydomeVp.view)
+    vec4.transformMat4(v, v, skydomeVp.projection)
+
+    // perspective division
+    vec4.scale(v, v, 1.0 / v[3] )
+
+    // scale (x,y) from range [-1,+1] to range [0,+1]
+    vec4.add(v, v, [1.0, 1.0, 0.0, 0.0] )
+    vec4.scale(v, v, 0.5)
+
+    return [v[0], v[1] ]
+}
+
 shell.on("gl-init", function () {
     var gl = shell.gl
 
@@ -540,8 +563,15 @@ shell.on("gl-init", function () {
 
     // stanford bunny.
     bunnyGeom = Geometry(gl)
-    bunnyGeom.attr('aPosition', bunny.positions)
-    bunnyGeom.attr('aNormal', normals.vertexNormals(bunny.cells, bunny.positions))
+
+    var model = mat4.create();
+    mat4.translate(model, model, [0, 0, 200]);
+    var bunnyPositions = geoTransform(bunny.positions, model);
+
+
+
+    bunnyGeom.attr('aPosition', bunnyPositions)
+    bunnyGeom.attr('aNormal', normals.vertexNormals(bunny.cells, bunnyPositions))
     bunnyGeom.faces(bunny.cells)
 
     // sun sphere
@@ -577,7 +607,7 @@ shell.on("gl-init", function () {
 
 
     // create model matrix of ground plane.
-    var model = mat4.create();
+    model = mat4.create();
     mat4.rotateX(model, model, Math.PI / 2);
     mat4.translate(model, model, [0, 0, 0]);
     mat4.scale(model, model, [1000, 1000, 1]);
@@ -672,6 +702,8 @@ function renderSun(gl, skydomeVp) {
 
 }
 
+
+
 shell.on("gl-render", function (t) {
 
 
@@ -701,7 +733,7 @@ shell.on("gl-render", function (t) {
 
     /*
      Render pass 1:
-      Render geometry that occludes the light source as black.
+      Render all geometry that could occlude the light source as black.
       Normally render light source.
 
       And render all the above to a texture called the "occlusion texture"
@@ -747,7 +779,7 @@ shell.on("gl-render", function (t) {
      Render pass 3.
 
      Now enable alpha blending, because we will render the volumetric light rays in a fullscreen pass, and
-     combine it with the scene rendered in pass 2 by simply using alpha blending.
+     combine them with the scene rendered in pass 2 by simply using alpha blending.
 
      Also, as input to pass 3, is the "occlusion texture" that was rendered to in pass 1. This texture is used to
      ensure that unnatural streaks of light do not appear on objects that are occluding the light source.
@@ -757,13 +789,11 @@ shell.on("gl-render", function (t) {
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
 
-
     postPassProgram.bind();
-    postPassProgram.uniforms.uBuffer = fbo.color[0].bind();
-    postPassProgram.uniforms.uSunDir = sunDir
-    postPassProgram.uniforms.uView = skydomeVp.view
-    postPassProgram.uniforms.uProjection = skydomeVp.projection
+    postPassProgram.uniforms.uOcclusionTexture = fbo.color[0].bind();
+    postPassProgram.uniforms.uScreenSpaceSunPos = getScreenSpaceSunPos(skydomeVp);
 
+    // run fullscreen pass.
     fillScreen(gl);
 
     gl.disable(gl.BLEND);
