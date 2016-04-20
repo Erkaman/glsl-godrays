@@ -1,6 +1,6 @@
 {
   "name": "glsl-godrays",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Shader function for rendering godrays(volumetric light scattering).",
   "scripts": {
     "start": "budo --live example/index.js -- -t glslify",
