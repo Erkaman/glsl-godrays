@@ -21,16 +21,16 @@ The camera in the demo is controlled as follows:
 
 In order to implement the effect, no less than three rendering passes will have to be done:
 
-1. Render all geometry that could occlude the light source as black. Normally render light source.
+* Pass 1: Render all geometry that could occlude the light source as black. Normally render light source.
 And render all the above to a texture called the "occlusion texture". Note that this texture
 does not have to be exactly the size of the screen, but it can be smaller.
 And by making it smaller, lots of performance can be gained.
 
 
-2. Render everything normally, to the default framebuffer.
+* Pass 2: Render everything normally, to the default framebuffer.
 
 
-3.  Now enable alpha blending, because we will render the volumetric light rays in a fullscreen pass, and
+* Pass 3: Now enable alpha blending, because we will render the volumetric light rays in a fullscreen pass, and
      combine them with the scene rendered in pass 2 by simply using alpha blending. Also, as input to pass 3, is the "occlusion texture" that was rendered to in pass 1. This texture is used to
      ensure that unnatural streaks of light do not appear on objects that are occluding the light source.
 
