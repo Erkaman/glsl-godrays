@@ -4,6 +4,14 @@ This module implements the volumetric light scattering effect(godrays) described
 "Volumetric Light Scattering as a Post-Process" as a GLSL shader. A demo
 is provided at: http://erkaman.github.io/glsl-godrays/
 
+The camera in the demo is controlled as follows:
+
+* Keys `W` and `S` are used to walk forward and backward.
+* Keys `A` and `D` are used to stride left and right.
+* Keys `O` and `L` are used to fly up and down.
+* Hold down the key `M` to speed up the camera.
+* Hold down the left mouse button and move the mouse to turn the camera.
+
 
 ![text](images/scattering.png)
 
