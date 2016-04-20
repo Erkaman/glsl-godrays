@@ -5,13 +5,13 @@ vec3 godrays(
     float exposure,
     int numSamples,
     sampler2D occlusionTexture,
-    vec2 screenSpaceSunPos,
+    vec2 screenSpaceLightPos,
     vec2 uv
     ) {
 
     vec3 fragColor = vec3(0.0,0.0,0.0);
 
-	vec2 deltaTextCoord = vec2( uv - screenSpaceSunPos.xy );
+	vec2 deltaTextCoord = vec2( uv - screenSpaceLightPos.xy );
 
 	vec2 textCoo = uv.xy ;
 	deltaTextCoord *= (1.0 /  float(numSamples)) * density;

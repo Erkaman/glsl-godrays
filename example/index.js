@@ -509,13 +509,15 @@ var fboScale = 0.5;
 // "occlusion texture".
 var fbo;
 
+var totalTime = 0;
+
 
 // sun direction.
 var sunDir = vec3.fromValues(0.958, 0.28, 0)
 
 // movable camera.
 var camera = createMovableCamera({
-    position: vec3.fromValues(-30.0, 3.0, -7.0),
+    position: vec3.fromValues(-30.0, 3.0, 260.0),
     viewDir: vec3.fromValues(0.71, 0.51, 0)
 });
 
@@ -711,6 +713,8 @@ function renderSun(gl, skydomeVp) {
 
 shell.on("gl-render", function (t) {
 
+    totalTime += t;
+
 
     var gl = shell.gl
     var canvas = shell.canvas;
@@ -806,35 +810,66 @@ shell.on("gl-render", function (t) {
 
 })
 
+var cameraDirection = -0.13;
+var freeCamera = false;
+
 shell.on("tick", function () {
 
-    if (shell.wasDown("mouse-left")) {
+    if(!freeCamera) {
 
-        camera.turn(-(shell.mouseX - shell.prevMouseX), +(shell.mouseY - shell.prevMouseY));
-    }
+        // if not free camera, make the camera traverse a set path.
 
-    if (shell.wasDown("W")) {
-        camera.walk(true);
-    } else if (shell.wasDown("S")) {
-        camera.walk(false);
-    }
+        camera.position[2] += cameraDirection;
 
-    if (shell.wasDown("A")) {
-        camera.stride(true);
-    } else if (shell.wasDown("D")) {
-        camera.stride(false);
-    }
+        // flip direction if reached edge.
+        if(camera.position[2] < -10) {
+            cameraDirection *= -1;
+        }
+        if(camera.position[2] > 260) {
+            cameraDirection *= -1;
+        }
 
-    if (shell.wasDown("O")) {
-        camera.fly(true);
-    } else if (shell.wasDown("L")) {
-        camera.fly(false);
-    }
+        camera.position[1] = 5 + 3*Math.sin(totalTime * 0.1);
 
-    if (shell.wasDown("M")) {
-        camera.velocity = 2.5;
     } else {
-        camera.velocity = 0.5;
+        // if free camera, listen to keyboard and mouse input.
+
+        if (shell.wasDown("mouse-left")) {
+
+            camera.turn(-(shell.mouseX - shell.prevMouseX), +(shell.mouseY - shell.prevMouseY));
+        }
+
+        if (shell.wasDown("W")) {
+            camera.walk(true);
+        } else if (shell.wasDown("S")) {
+            camera.walk(false);
+        }
+
+        if (shell.wasDown("A")) {
+            camera.stride(true);
+        } else if (shell.wasDown("D")) {
+            camera.stride(false);
+        }
+
+        if (shell.wasDown("O")) {
+            camera.fly(true);
+        } else if (shell.wasDown("L")) {
+            camera.fly(false);
+        }
+
+        if (shell.wasDown("M")) {
+            camera.velocity = 2.5;
+        } else {
+            camera.velocity = 0.5;
+        }
+
     }
+
+    if (shell.wasDown("mouse-left")) {
+        // press left mouse button to free the camera.
+        freeCamera = true
+    }
+
+
 
 })

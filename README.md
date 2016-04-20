@@ -2,10 +2,10 @@
 
 This module implements the volumetric light scattering effect(godrays) described in
 "Volumetric Light Scattering as a Post-Process" as a GLSL shader. A demo
-is provided at: TODO
+is provided at: http://erkaman.github.io/glsl-godrays/
 
 
-![text](images/scattering.jpg)
+![text](images/scattering.png)
 
 [![NPM](https://nodei.co/npm/glsl-godrays.png)](https://www.npmjs.com/package/glsl-godrays)
 
@@ -41,7 +41,7 @@ vec3 godrays(
     float exposure,
     int numSamples,
     sampler2D occlusionTexture,
-    vec2 screenSpaceSunPos,
+    vec2 screenSpaceLightPos,
     vec2 uv
     );
    ```
@@ -54,6 +54,6 @@ Where the parameters are
 * `exposure` see the above.
 * `numSamples` see the above. However, note that the maximum value of this parameter is 100!
 * `occlusionTexture` the "occlusion texture" created in pass 1.
-* `screenSpaceSunPos` the sun position in screen space. In the source code of the demo it is shown how this can be calculated.
+* `screenSpaceLightPos` the light position in screen space. In the source code of the demo it is shown how this can be calculated.
 * `uv` the coordinates of the current fragment. Note that `x` and `y` should both be in the interval
 `[0,1]`, over the entire screen.

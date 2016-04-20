@@ -1,6 +1,6 @@
 {
   "name": "glsl-godrays",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "description": "Shader function for rendering godrays(volumetric light scattering).",
   "scripts": {
     "start": "budo --live example/index.js -- -t glslify",
@@ -18,7 +18,7 @@
     "scattering"
   ],
   "author": "Eric Arnebäck <arnebackeric@gmail.com> (https://github.com/Erkaman)",
-  "license": "Unlicense",
+  "license": "MIT",
   "devDependencies": {
     "a-big-triangle": "^1.0.2",
     "budo": "^7.1.0",
