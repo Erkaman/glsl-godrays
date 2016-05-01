@@ -10,20 +10,21 @@ varying vec2 vUv;
 
 uniform vec2 uScreenSpaceSunPos;
 
+uniform float uDensity;
+uniform float uWeight;
+uniform float uDecay;
+uniform float uExposure;
+uniform int uNumSamples;
+
+
 void main() {
 
-    float density = 1.0;
-    float weight = 0.01;
-    float decay = 1.0;
-    float exposure = 1.0;
-    int numSamples = 100;
-
 vec3 fragColor = godrays(
-    density,
-    weight,
-    decay,
-    exposure,
-    numSamples,
+    uDensity,
+    uWeight,
+    uDecay,
+    uExposure,
+    uNumSamples,
     uOcclusionTexture,
     uScreenSpaceSunPos,
     vUv

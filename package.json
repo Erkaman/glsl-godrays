@@ -1,9 +1,9 @@
 {
   "name": "glsl-godrays",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Shader function for rendering godrays(volumetric light scattering).",
   "scripts": {
-    "start": "budo --live example/index.js -- -t glslify",
+    "start": "budo --verbose example/index.js -t glslify --live --open",
     "test": "standard"
   },
   "keywords": [
@@ -33,9 +33,10 @@
     "gl-skydome-sun": "^2.0.0",
     "gl-vec3": "^1.0.3",
     "gl-vec4": "^1.0.1",
-    "glslify": "^5.0.0",
+    "glslify": "^5.0.2",
     "mesh-combine": "^1.1.0",
     "normals": "^1.0.1",
+    "pnp-gui": "0.0.3",
     "primitive-cube": "^2.0.0",
     "primitive-plane": "^1.0.1",
     "primitive-sphere": "^2.0.0",
