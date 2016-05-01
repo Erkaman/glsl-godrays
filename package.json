@@ -40,7 +40,7 @@
     "primitive-cube": "^2.0.0",
     "primitive-plane": "^1.0.1",
     "primitive-sphere": "^2.0.0",
-    "standard": "^5.4.1"
+    "standard": "^5.4.1",
   },
   "dependencies": {},
   "directories": {
