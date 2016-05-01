@@ -21,6 +21,7 @@ var createPlane = require('primitive-plane')
 var createCube = require('primitive-cube')
 var geoTransform = require('geo-3d-transform-mat4')
 var meshCombine = require('mesh-combine')
+var createGui = require('pnp-gui')
 
 /*
 Below comes a modified version of the module "gl-fbo"
@@ -500,7 +501,8 @@ End of "gl-fbo"
 var phongProgram, // does phong shading for every fragment.
     colorProgram, // this program outputs a single color for every fragment covered by the geometry.
     postPassProgram, // does screen space volumetric scattering.
-    skydome, bunnyGeom, boxesGeom, sunSphere, planeGeom
+    skydome, bunnyGeom, boxesGeom, sunSphere, planeGeom,
+    gui, mouseLeftDownPrev = false;
 
 // Scale of the "occlusion texture" that we are rendering to, in proportion to the full screen size.
 // even if it is not 1.0, it doesn't make a very big visual difference.  And by making the "occlusion texture"
@@ -521,6 +523,16 @@ var camera = createMovableCamera({
     viewDir: vec3.fromValues(0.71, 0.51, 0)
 });
 
+/*
+These variables can be tweaked by the GUI.
+ */
+
+var density = { val: 0.00 };
+var weight =  { val:0.00 };
+var decay =  { val:0.0 };
+var exposure = { val: 0.0 };
+var numSamples = {val: 0 };
+var showGui = {val: false };
 
 function addBox(mesh, scale, translate) {
 
@@ -562,14 +574,23 @@ function getScreenSpaceSunPos(skydomeVp) {
     return [v[0], v[1] ]
 }
 
+function restoreDefaultSettings() {
+    density.val = 1.0;
+    weight.val = 0.01;
+    decay.val = 1.0 ;
+    exposure.val = 1.0;
+    numSamples.val = 100 ;
+}
+
 shell.on("gl-init", function () {
     var gl = shell.gl
 
-    gl.enable(gl.DEPTH_TEST)
+    gl.enable(gl.DEPTH_TEST);
 
+    gui = new createGui(gl);
 
     // stanford bunny.
-    bunnyGeom = Geometry(gl)
+    bunnyGeom = Geometry(gl);
 
     var model = mat4.create();
     mat4.translate(model, model, [0, 0, 200]);
@@ -639,7 +660,9 @@ shell.on("gl-init", function () {
 
     fbo = createFBO(gl, [shell.canvas.width * fboScale, shell.canvas.height * fboScale], {depth: true});
 
-    gl.clearColor(0.0, 0.0, 0.0, 1)
+    gl.clearColor(0.0, 0.0, 0.0, 1);
+
+    restoreDefaultSettings();
 
 })
 
@@ -705,11 +728,10 @@ function renderSun(gl, skydomeVp) {
     gl.disable(gl.DEPTH_TEST)
     sunSphere.draw()
     gl.enable(gl.DEPTH_TEST)
-
-
 }
 
 
+var flag = 0;
 
 shell.on("gl-render", function (t) {
 
@@ -801,6 +823,21 @@ shell.on("gl-render", function (t) {
     postPassProgram.bind();
     postPassProgram.uniforms.uOcclusionTexture = fbo.color[0].bind();
     postPassProgram.uniforms.uScreenSpaceSunPos = getScreenSpaceSunPos(skydomeVp);
+    postPassProgram.uniforms.uDensity = density.val;
+    postPassProgram.uniforms.uWeight = weight.val;
+    postPassProgram.uniforms.uDecay = decay.val;
+    postPassProgram.uniforms.uExposure = exposure.val;
+    postPassProgram.uniforms.uNumSamples = numSamples.val;
+
+
+    /*
+        float density = 1.0;
+        float weight = 0.01;
+        float decay = 1.0;
+        float exposure = 1.0;
+        int numSamples = 100;
+        */
+
 
     // run fullscreen pass.
     fillScreen(gl);
@@ -808,12 +845,49 @@ shell.on("gl-render", function (t) {
     gl.disable(gl.BLEND);
 
 
+    var pressed = shell.wasDown("mouse-left");
+    var io = {
+        mouseLeftDownCur: pressed,
+        mouseLeftDownPrev: mouseLeftDownPrev,
+
+        mousePositionCur: shell.mouse,
+        mousePositionPrev: shell.prevMouse
+    };
+    mouseLeftDownPrev = pressed;
+
+    gui.begin(io, "Properties");
+
+    gui.checkbox("Show GUI", showGui);
+
+    if(showGui.val) {
+        // larger window, render widgets.
+        gui.windowSizes = [240, 200];
+
+        gui.sliderFloat("Density", density, 0, 2.0);
+        gui.sliderFloat("Weight", weight, 0, 0.1);
+        gui.sliderFloat("Decay", decay, 0.95, 1.05);
+        gui.sliderFloat("Exposure", exposure, 0, 2.0);
+        gui.sliderInt("numSamples", numSamples, 0, 100);
+
+        if(gui.button("Restore Defaults")) {
+            restoreDefaultSettings();
+        }
+
+    } else {
+        // small window, but no widgets
+        gui.windowSizes = [240, 50];
+    }
+
+    gui.end(gl, canvas.width, canvas.height);
+
+    ++flag;
 })
 
 var cameraDirection = -0.13;
 var freeCamera = false;
 
 shell.on("tick", function () {
+
 
     if(!freeCamera) {
 
@@ -835,6 +909,9 @@ shell.on("tick", function () {
         // if free camera, listen to keyboard and mouse input.
 
         if (shell.wasDown("mouse-left")) {
+            // if interacting with the GUI, do not let the mouse control the camera.
+            if (gui.hasMouseFocus())
+                return;
 
             camera.turn(-(shell.mouseX - shell.prevMouseX), +(shell.mouseY - shell.prevMouseY));
         }
@@ -865,7 +942,7 @@ shell.on("tick", function () {
 
     }
 
-    if (shell.wasDown("mouse-left")) {
+    if (shell.wasDown("mouse-left") && !gui.hasMouseFocus()) {
         // press left mouse button to free the camera.
         freeCamera = true
     }
